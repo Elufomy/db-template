@@ -1,19 +1,17 @@
-<!--
-  Это шаблон. После создания своего репозитория:
-  1. Назовите репозиторий db-<фамилия>-<тема>, например db-ivanova-cinema.
-  2. Заполните разделы ниже под свою тему и удалите этот комментарий.
--->
+# Доставка еды
 
-# Название проекта
-
-Тема № __: **...**. Одно предложение: какие данные хранит база и кому они нужны.
+Тема № 9: **Доставка еды**. База хранит данные о ресторанах, их меню, курьерах, заказах клиентов и позициях этих заказов. Нужна сервису доставки, чтобы принимать заказы, назначать курьеров и считать стоимость.
 
 | | |
 | --- | --- |
-| Главная таблица | ... |
-| Связь N:M | ... и ... через `...` |
-| Бизнес-правило | ... |
+| Главная таблица | `orders` |
+| Связь N:M | `orders` и `dishes` через `order_items` |
+| Бизнес-правило | У курьера не больше 3 активных заказов |
 | СУБД | PostgreSQL 17 в Docker |
+
+## Описание предметной области
+
+Система автоматизирует доставку еды из ресторанов. Клиенты оформляют заказы через приложение: выбирают ресторан, блюда и адрес доставки. Рестораны публикуют меню, у каждого блюда указаны категория, состав, КБЖУ, вес и цена. Курьеры привязаны к районам города и перемещаются на разном транспорте — пешком, на велосипеде или на машине. Каждый заказ состоит из нескольких позиций, одна позиция — это блюдо и его количество. У одного заказа один ресторан и один курьер, но курьер может везти много заказов, а ресторан — принимать много заказов. Одно и то же блюдо может входить в разные заказы, поэтому между заказами и блюдами реализована связь «многие ко многим» через таблицу `order_items`.
 
 ## Задания курса
 
@@ -38,27 +36,58 @@ dbcheck run demo/lab1.sql     # сценарий лабы 1
 
 Работа с базой: `docker compose exec db psql -U postgres -d app`. Сценарии выполняются в `psql` командой `\i /demo/lab1.sql`.
 
-После изменения скриптов в `db/` базу нужно пересоздать: `docker compose down -v && docker compose up -d`.
+После изменения скриптов в `db/` базу нужно пересоздать: `docker compose down -d && docker compose up -d`.
 
 ## ER-диаграмма
 
-<!-- Замените пример своими таблицами: 5+ таблиц, связь N:M через связующую таблицу. -->
-
 ```mermaid
 erDiagram
-    films ||--o{ sessions : "показывают"
-    halls ||--o{ sessions : "проходит в"
-    sessions ||--o{ tickets : "продано"
-    films ||--o{ film_genres : ""
-    genres ||--o{ film_genres : ""
+    restaurants ||--o{ dishes : "готовит"
+    restaurants ||--o{ orders : "принимает"
+    couriers    ||--o{ orders : "доставляет"
+    orders      ||--o{ order_items : "содержит"
+    dishes      ||--o{ order_items : "входит в"
 
-    films {
-        int id PK
-        text title
+    restaurants {
+        int  id PK
+        text name
+        text address
+        text type
+        text phone
+        numeric rating
+        text area
     }
-    film_genres {
-        int film_id PK, FK
-        int genre_id PK, FK
+    dishes {
+        int  id PK
+        int  restaurant_id FK
+        text name
+        text category
+        int  calories
+        int  weight_g
+        numeric price
+    }
+    couriers {
+        int  id PK
+        text courier_number
+        text full_name
+        text transport_type
+        text district
+        text status
+    }
+    orders {
+        int  id PK
+        text customer_email
+        int  restaurant_id FK
+        int  courier_id FK
+        text address
+        text status
+        timestamptz created_at
+    }
+    order_items {
+        int  order_id PK,FK
+        int  dish_id PK,FK
+        int  quantity
+        numeric price_at_order
     }
 ```
 
@@ -66,22 +95,19 @@ erDiagram
 
 | Ограничение | Таблица и колонки | Зачем |
 | --- | --- | --- |
-| `UNIQUE` | ... | ... |
-| `CHECK` | ... | ... |
+| `UNIQUE` | `restaurants.name` | Название ресторана не должно повторяться |
+| `UNIQUE` | `couriers.courier_number` | Номер курьера уникален |
+| `CHECK` | `dishes.price > 0` | Цена не может быть отрицательной или нулём |
+| `CHECK` | `dishes.weight_g > 0` | Вес блюда должен быть положительным |
+| `CHECK` | `couriers.transport_type IN (...)` | Только пеший, машина или велосипед |
+| `CHECK` | `orders.status IN (...)` | Статус заказа — из фиксированного набора |
 
 ## Что сделано по лабам
 
 | Лаба | Что сделано | Сценарий |
 | --- | --- | --- |
-| 1 | ... | `demo/lab1.sql` |
+| 1 | Схема (5 таблиц, N:M, ограничения), данные (10+ строк), три плохие вставки | `demo/lab1.sql` |
 | 2 | ... | `demo/lab2.sql` |
 | 3 | ... | `demo/lab3.sql` |
 | 4 | ... | `demo/lab4.sql`, `demo/race.sql`, `demo/race_fixed.sql` |
 | 5 | ... | `demo/lab5.sql` |
-
-<!--
-  Разделы, которые добавляются по ходу курса:
-  лаба 1 ★: «Нормализация», «Типы данных»; ★★: «Что происходит при удалении»;
-  лаба 4: «Гонка»;
-  лаба 5: «Производительность» (таблица до / после, когда индекс не помогает, размеры).
--->
