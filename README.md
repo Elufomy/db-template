@@ -32,3 +32,56 @@
 cp .env.example .env          # пароли и порт
 docker compose up -d          # при первом запуске выполняются скрипты из db/
 dbcheck run demo/lab1.sql     # сценарий лабы 1
+```
+
+## ER-диаграмма
+
+```mermaid
+erDiagram
+    restaurants ||--o{ dishes : "готовит"
+    restaurants ||--o{ orders : "принимает"
+    couriers    ||--o{ orders : "доставляет"
+    orders      ||--o{ order_items : "содержит"
+    dishes      ||--o{ order_items : "входит в"
+
+    restaurants {
+        int  id PK
+        text name
+        text address
+        text type
+        text phone
+        numeric rating
+        text area
+    }
+    dishes {
+        int  id PK
+        int  restaurant_id FK
+        text name
+        text category
+        int  calories
+        int  weight_g
+        numeric price
+    }
+    couriers {
+        int  id PK
+        text courier_number
+        text full_name
+        text transport_type
+        text district
+        text status
+    }
+    orders {
+        int  id PK
+        text customer_email
+        int  restaurant_id FK
+        int  courier_id FK
+        text address
+        text status
+        timestamptz created_at
+    }
+    order_items {
+        int  order_id PK,FK
+        int  dish_id PK,FK
+        int  quantity
+        numeric price_at_order
+    }
