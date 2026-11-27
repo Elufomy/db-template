@@ -1,4 +1,4 @@
--- 1. представление(карточка)
+-- представление(карточка)
 CREATE OR REPLACE VIEW order_cards AS
 SELECT 
     o.id AS order_id,
@@ -12,7 +12,7 @@ FROM orders o
 LEFT JOIN restaurants r ON r.id = o.restaurant_id
 LEFT JOIN couriers c ON c.id = o.courier_id;
 
--- 2. представление(выручка)
+-- представление(выручка)
 CREATE OR REPLACE VIEW restaurant_revenue AS
 SELECT 
     r.name AS restaurant_name,
