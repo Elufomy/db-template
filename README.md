@@ -1,3 +1,4 @@
+
 # Доставка еды
 
 Тема № 9: **Доставка еды**. База хранит данные о ресторанах, их меню, курьерах, заказах клиентов и позициях этих заказов. Нужна сервису доставки, чтобы принимать заказы, назначать курьеров и считать стоимость.
@@ -45,7 +46,7 @@ erDiagram
     dishes      ||--o{ order_items : "входит в"
 
     restaurants {
-        int  id PK
+        int id PK
         text name
         text address
         text type
@@ -54,16 +55,16 @@ erDiagram
         text area
     }
     dishes {
-        int  id PK
-        int  restaurant_id FK
+        int id PK
+        int restaurant_id FK
         text name
         text category
-        int  calories
-        int  weight_g
+        int calories
+        int weight_g
         numeric price
     }
     couriers {
-        int  id PK
+        int id PK
         text courier_number
         text full_name
         text transport_type
@@ -71,21 +72,22 @@ erDiagram
         text status
     }
     orders {
-        int  id PK
+        int id PK
         text customer_email
-        int  restaurant_id FK
-        int  courier_id FK
+        int restaurant_id FK
+        int courier_id FK
         text address
         text status
         timestamptz created_at
     }
     order_items {
-        int  order_id PK,FK
-        int  dish_id PK,FK
-        int  quantity
+        int order_id PK,FK
+        int dish_id PK,FK
+        int quantity
         numeric price_at_order
     }
 ```
+
 ## Ограничения
 
 | Ограничение | Таблица и колонки | Зачем |
@@ -100,9 +102,11 @@ erDiagram
 ## Нормализация
 
 Схема приведена к третьей нормальной форме (3НФ):
+
 - **1НФ:** в каждой ячейке одно значение. Ингредиенты хранятся строкой, а список блюд заказа вынесен в отдельную таблицу `order_items`.
 - **2НФ:** в таблице `order_items` составной первичный ключ `(order_id, dish_id)`. Поля `quantity` и `price_at_order` зависят от обоих ключей.
 - **3НФ:** транзитивных зависимостей нет. Название ресторана хранится только в таблице `restaurants`, а в `dishes` и `orders` используются внешние ключи (`restaurant_id`).
+
 Сознательная денормализация: в `order_items` хранится `price_at_order`, чтобы зафиксировать историческую цену блюда на момент заказа.
 
 ## Что сделано по лабам
@@ -112,5 +116,5 @@ erDiagram
 | 1 | Схема (5 таблиц, N:M, ограничения), данные, три плохие вставки, генератор на 1000+ строк | `demo/lab1.sql`, `db/03_generate.sql` |
 | 2 | 16 запросов (JOIN, GROUP BY, подзапросы, DML, CTE) | `demo/lab2.sql` |
 | 3 | Представления, функции, процедура, триггеры (правило 3-х заказов, updated_at, журнал jsonb) | `demo/lab3.sql`, `db/10_views.sql`, `db/11_functions.sql`, `db/12_triggers.sql` |
-| 4 | ... | `demo/lab4.sql`, `demo/race.sql`, `demo/race_fixed.sql` |
+| 4 | Транзакции и откат при ошибках, конкурентный доступ, защита от гонок, уровни изоляции, взаимные блокировки, роли пользователей, RLS и резервное копирование | `demo/lab4.sql`, `demo/race.sql`, `demo/race_fixed.sql`, `demo/isolation_rc.sql`, `demo/isolation_rr.sql`, `demo/deadlock.sql`, `db/30_rls.sql`, `demo/rls.sql`, `scripts/backup.ps1` |
 | 5 | ... | `demo/lab5.sql` |

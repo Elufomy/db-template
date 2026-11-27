@@ -1,4 +1,4 @@
--- 3. функция(стоимость возвращает ч)
+-- функция(стоимость возвращает ч)
 CREATE OR REPLACE FUNCTION get_order_total(p_order_id integer) 
 RETURNS numeric AS $$
 BEGIN
@@ -10,7 +10,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- 4. функция(список свободных курьеров возвращает т)
+-- функция(список свободных курьеров возвращает т)
 CREATE OR REPLACE FUNCTION get_free_couriers()
 RETURNS TABLE(courier_id integer, courier_name text, transport text) AS $$
 BEGIN
@@ -21,9 +21,12 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- 5. бизнес-операция назначает курьера
+-- бизнес-операция назначает курьера
 CREATE OR REPLACE PROCEDURE assign_courier(p_order_id integer, p_courier_id integer)
-LANGUAGE plpgsql AS $$
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, pg_temp 
+AS $$
 BEGIN
     UPDATE orders 
     SET courier_id = p_courier_id, status = 'готовится' 

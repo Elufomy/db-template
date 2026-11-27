@@ -27,7 +27,7 @@ CREATE TRIGGER trg_check_courier_limit
     FOR EACH ROW
     EXECUTE FUNCTION check_courier_orders_limit();
 
--- 7. тригер обновление
+-- тригер обновление
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS trigger AS $$
 BEGIN
